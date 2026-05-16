@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "name": "Meteor Client",
+  "name": "Lime Client",
   "id": "meteor-client",
   "version": "${version}",
   "description": "Based utility mod.",
