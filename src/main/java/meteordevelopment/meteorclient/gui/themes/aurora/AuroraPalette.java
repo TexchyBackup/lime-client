@@ -10,7 +10,7 @@ import meteordevelopment.meteorclient.utils.render.color.Color;
 public final class AuroraPalette {
     public static final Color BG_TOP         = new Color(5, 10, 8);
     public static final Color BG_BOTTOM      = new Color(10, 15, 10);
-    public static final Color PANEL_BASE     = new Color(20, 30, 22, 217);
+    public static final Color PANEL_BASE     = new Color(15, 22, 17, 245);
     public static final Color PANEL_TOP      = new Color(255, 255, 255, 20);
     public static final Color PANEL_SHADOW   = new Color(0, 0, 0, 153);
     public static final Color TEXT_PRIMARY   = new Color(232, 245, 224);
