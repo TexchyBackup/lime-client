@@ -40,6 +40,7 @@ public class AuroraDebugScreen extends WidgetScreen {
 
     @Override
     protected void onRenderBefore(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        BackdropBlur.captureAndBlur();
         int pad = 16;
         int x = pad;
         int y = pad;
