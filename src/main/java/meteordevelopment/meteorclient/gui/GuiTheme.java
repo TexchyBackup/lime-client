@@ -333,6 +333,13 @@ public abstract class GuiTheme implements ISerializable<GuiTheme> {
         return scale(6);
     }
 
+    /**
+     * Optional Aurora palette. Non-Aurora themes return null; Aurora theme will override.
+     */
+    public meteordevelopment.meteorclient.gui.themes.aurora.AuroraPalette palette() {
+        return null;
+    }
+
     public WindowConfig getWindowConfig(String id) {
         WindowConfig config = windowConfigs.get(id);
         if (config != null) return config;
