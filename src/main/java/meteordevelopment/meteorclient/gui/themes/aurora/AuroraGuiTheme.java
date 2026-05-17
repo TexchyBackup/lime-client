@@ -15,6 +15,7 @@ import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraView;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraWindow;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.input.WAuroraDropdown;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.input.WAuroraSlider;
+import meteordevelopment.meteorclient.gui.themes.aurora.widgets.input.WAuroraTextBox;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.pressable.*;
 import meteordevelopment.meteorclient.gui.themes.meteor.MeteorGuiTheme;
 import meteordevelopment.meteorclient.gui.widgets.WTopBar;
@@ -24,6 +25,8 @@ import meteordevelopment.meteorclient.gui.widgets.containers.WView;
 import meteordevelopment.meteorclient.gui.widgets.containers.WWindow;
 import meteordevelopment.meteorclient.gui.widgets.input.WDropdown;
 import meteordevelopment.meteorclient.gui.widgets.input.WSlider;
+import meteordevelopment.meteorclient.gui.widgets.input.WTextBox;
+import meteordevelopment.meteorclient.gui.utils.CharFilter;
 import meteordevelopment.meteorclient.gui.widgets.pressable.*;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -155,5 +158,10 @@ public class AuroraGuiTheme extends MeteorGuiTheme {
     @Override
     public <T> WDropdown<T> dropdown(T[] values, T value) {
         return w(new WAuroraDropdown<>(values, value));
+    }
+
+    @Override
+    public WTextBox textBox(String text, String placeholder, CharFilter filter, Class<? extends WTextBox.Renderer> renderer) {
+        return w(new WAuroraTextBox(text, placeholder, filter, renderer));
     }
 }
