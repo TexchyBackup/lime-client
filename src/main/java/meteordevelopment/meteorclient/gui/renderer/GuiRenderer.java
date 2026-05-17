@@ -101,16 +101,6 @@ public class GuiRenderer {
     public void end() {
         scissorEnd();
 
-        // Aurora primitives use MESH_UNIFORMS which reads from RenderUtils.projection.
-        // By the time postTasks run, that matrix may have been overwritten by vanilla
-        // GUI/world rendering. Re-apply pixel-space ortho so primitives land correctly.
-        if (!postTasks.isEmpty()) {
-            meteordevelopment.meteorclient.utils.Utils.unscaledProjection();
-            for (Runnable task : postTasks) task.run();
-            meteordevelopment.meteorclient.utils.Utils.scaledProjection();
-        }
-        postTasks.clear();
-
         graphics.pose().popMatrix();
         graphics.nextStratum();
     }
@@ -132,6 +122,16 @@ public class GuiRenderer {
 
         r.render();
         rTex.render("u_Texture", TEXTURE.getTextureView(), TEXTURE.getSampler());
+
+        // Aurora SDF primitives — must run BEFORE text so text composites on top.
+        // MESH_UNIFORMS pulls projection from RenderUtils.projection, which may have
+        // been overwritten by the world pass; re-apply pixel-space ortho here.
+        if (!postTasks.isEmpty()) {
+            meteordevelopment.meteorclient.utils.Utils.unscaledProjection();
+            for (Runnable task : postTasks) task.run();
+            meteordevelopment.meteorclient.utils.Utils.scaledProjection();
+            postTasks.clear();
+        }
 
         // Normal text
         theme.textRenderer().begin(theme.scale(1));
