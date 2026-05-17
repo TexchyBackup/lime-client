@@ -9,7 +9,6 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import meteordevelopment.meteorclient.renderer.FixedUniformStorage;
 import meteordevelopment.meteorclient.renderer.MeshBuilder;
 import meteordevelopment.meteorclient.renderer.MeshRenderer;
 import meteordevelopment.meteorclient.renderer.MeteorRenderPipelines;
@@ -36,16 +35,8 @@ public final class Gradient {
         .putFloat()  // mode (0 linear, 1 radial)
         .get();
 
-    private static FixedUniformStorage<GradUniform> storage;
-
-    private static FixedUniformStorage<GradUniform> storage() {
-        if (storage == null) storage = new FixedUniformStorage<>("Aurora - Gradient UBO", UNIFORM_SIZE, 256);
-        return storage;
-    }
-
-    public static void beginFrame() {
-        if (storage != null) storage.clear();
-    }
+    private static final DynamicUniformStorage<GradUniform> STORAGE =
+        new DynamicUniformStorage<>("Aurora - Gradient UBO", UNIFORM_SIZE, 16);
 
     public static void linear(double x, double y, double w, double h, Color colorA, Color colorB, double angleDegrees) {
         linear(x, y, w, h, 0, colorA, colorB, angleDegrees);
@@ -74,7 +65,7 @@ public final class Gradient {
         float cy = (float) (y + hh);
         float r = (float) Math.min(radius, Math.min(hw, hh));
 
-        GpuBufferSlice slice = storage().write(new GradUniform(
+        GpuBufferSlice slice = STORAGE.writeUniform(new GradUniform(
             hw, hh, dirX, dirY,
             colorA.r / 255f, colorA.g / 255f, colorA.b / 255f, colorA.a / 255f,
             colorB.r / 255f, colorB.g / 255f, colorB.b / 255f, colorB.a / 255f,

@@ -89,10 +89,6 @@ public class GuiRenderer {
         this.graphics = graphics;
         this.graphics.nextStratum();
 
-        RoundedRect.beginFrame();
-        Glow.beginFrame();
-        Gradient.beginFrame();
-
         if (BackdropBlur.isEnabled()) BackdropBlur.captureAndBlur();
 
         var matrices = graphics.pose();

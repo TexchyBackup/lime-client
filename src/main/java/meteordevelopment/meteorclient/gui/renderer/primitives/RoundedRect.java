@@ -9,7 +9,6 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import meteordevelopment.meteorclient.renderer.FixedUniformStorage;
 import meteordevelopment.meteorclient.renderer.MeshBuilder;
 import meteordevelopment.meteorclient.renderer.MeshRenderer;
 import meteordevelopment.meteorclient.renderer.MeteorRenderPipelines;
@@ -35,17 +34,8 @@ public final class RoundedRect {
         .putVec4()    // borderColor
         .get();
 
-    private static FixedUniformStorage<RectUniform> storage;
-
-    private static FixedUniformStorage<RectUniform> storage() {
-        if (storage == null) storage = new FixedUniformStorage<>("Aurora - RoundedRect UBO", UNIFORM_SIZE, 512);
-        return storage;
-    }
-
-    /** Reset per-frame allocation. */
-    public static void beginFrame() {
-        if (storage != null) storage.clear();
-    }
+    private static final DynamicUniformStorage<RectUniform> STORAGE =
+        new DynamicUniformStorage<>("Aurora - RoundedRect UBO", UNIFORM_SIZE, 16);
 
     public static void draw(double x, double y, double w, double h, double radius, Color fill) {
         draw(x, y, w, h, radius, fill, null, 0.0);
@@ -61,7 +51,7 @@ public final class RoundedRect {
         float r = (float) Math.min(radius, Math.min(hw, hh));
 
         Color bc = border != null ? border : new Color(0, 0, 0, 0);
-        GpuBufferSlice slice = storage().write(new RectUniform(
+        GpuBufferSlice slice = STORAGE.writeUniform(new RectUniform(
             hw, hh, r, (float) Math.max(0.0, borderWidth),
             bc.r / 255f, bc.g / 255f, bc.b / 255f, bc.a / 255f
         ));

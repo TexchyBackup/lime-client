@@ -9,7 +9,6 @@ import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.buffers.Std140Builder;
 import com.mojang.blaze3d.buffers.Std140SizeCalculator;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import meteordevelopment.meteorclient.renderer.FixedUniformStorage;
 import meteordevelopment.meteorclient.renderer.MeshBuilder;
 import meteordevelopment.meteorclient.renderer.MeshRenderer;
 import meteordevelopment.meteorclient.renderer.MeteorRenderPipelines;
@@ -31,16 +30,8 @@ public final class Glow {
         .putFloat()   // glowRadius
         .get();
 
-    private static FixedUniformStorage<GlowUniform> storage;
-
-    private static FixedUniformStorage<GlowUniform> storage() {
-        if (storage == null) storage = new FixedUniformStorage<>("Aurora - Glow UBO", UNIFORM_SIZE, 256);
-        return storage;
-    }
-
-    public static void beginFrame() {
-        if (storage != null) storage.clear();
-    }
+    private static final DynamicUniformStorage<GlowUniform> STORAGE =
+        new DynamicUniformStorage<>("Aurora - Glow UBO", UNIFORM_SIZE, 16);
 
     public static void draw(double x, double y, double w, double h, double radius, double glowRadius, Color color) {
         if (w <= 0 || h <= 0) return;
@@ -55,7 +46,7 @@ public final class Glow {
         float qHw = hw + g;
         float qHh = hh + g;
 
-        GpuBufferSlice slice = storage().write(new GlowUniform(hw, hh, r, g));
+        GpuBufferSlice slice = STORAGE.writeUniform(new GlowUniform(hw, hh, r, g));
 
         MeshBuilder mb = new MeshBuilder(MeteorVertexFormats.POS2_TEXTURE_COLOR, VertexFormat.Mode.TRIANGLES);
         mb.begin();
