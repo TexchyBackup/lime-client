@@ -13,6 +13,7 @@ import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraSection;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraTopBar;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraView;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraWindow;
+import meteordevelopment.meteorclient.gui.themes.aurora.widgets.input.WAuroraSlider;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.pressable.*;
 import meteordevelopment.meteorclient.gui.themes.meteor.MeteorGuiTheme;
 import meteordevelopment.meteorclient.gui.widgets.WTopBar;
@@ -20,6 +21,7 @@ import meteordevelopment.meteorclient.gui.widgets.WWidget;
 import meteordevelopment.meteorclient.gui.widgets.containers.WSection;
 import meteordevelopment.meteorclient.gui.widgets.containers.WView;
 import meteordevelopment.meteorclient.gui.widgets.containers.WWindow;
+import meteordevelopment.meteorclient.gui.widgets.input.WSlider;
 import meteordevelopment.meteorclient.gui.widgets.pressable.*;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
@@ -141,5 +143,10 @@ public class AuroraGuiTheme extends MeteorGuiTheme {
     @Override
     public WWidget module(Module module, String title) {
         return w(new WAuroraModule(module, title));
+    }
+
+    @Override
+    public WSlider slider(double value, double min, double max) {
+        return w(new WAuroraSlider(value, min, max));
     }
 }
