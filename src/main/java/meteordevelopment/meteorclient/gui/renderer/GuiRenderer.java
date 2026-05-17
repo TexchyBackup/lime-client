@@ -101,7 +101,14 @@ public class GuiRenderer {
     public void end() {
         scissorEnd();
 
-        for (Runnable task : postTasks) task.run();
+        // Aurora primitives use MESH_UNIFORMS which reads from RenderUtils.projection.
+        // By the time postTasks run, that matrix may have been overwritten by vanilla
+        // GUI/world rendering. Re-apply pixel-space ortho so primitives land correctly.
+        if (!postTasks.isEmpty()) {
+            meteordevelopment.meteorclient.utils.Utils.unscaledProjection();
+            for (Runnable task : postTasks) task.run();
+            meteordevelopment.meteorclient.utils.Utils.scaledProjection();
+        }
         postTasks.clear();
 
         graphics.pose().popMatrix();
