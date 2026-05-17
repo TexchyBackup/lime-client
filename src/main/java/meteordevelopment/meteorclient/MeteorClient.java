@@ -13,6 +13,7 @@ import meteordevelopment.meteorclient.events.meteor.MouseClickEvent;
 import meteordevelopment.meteorclient.events.world.TickEvent;
 import meteordevelopment.meteorclient.gui.GuiThemes;
 import meteordevelopment.meteorclient.gui.WidgetScreen;
+import meteordevelopment.meteorclient.gui.screens.debug.AuroraDebugScreen;
 import meteordevelopment.meteorclient.gui.tabs.Tabs;
 import meteordevelopment.meteorclient.systems.Systems;
 import meteordevelopment.meteorclient.systems.config.Config;
@@ -160,6 +161,14 @@ public class MeteorClient implements ClientModInitializer {
     private void onKey(KeyInputEvent event) {
         if (event.action == KeyAction.Press && KeyBinds.OPEN_GUI.matches(event.input)) {
             toggleGui();
+        }
+
+        // F8 -> Aurora primitive debug screen (dev only)
+        if (event.action == KeyAction.Press
+            && FabricLoader.getInstance().isDevelopmentEnvironment()
+            && event.key() == org.lwjgl.glfw.GLFW.GLFW_KEY_F8
+            && mc.screen == null) {
+            mc.setScreen(new AuroraDebugScreen());
         }
     }
 
