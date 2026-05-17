@@ -25,13 +25,15 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
  * Left click toggles. Right click opens module settings.
  */
 public class WAuroraModule extends WPressable implements AuroraWidget {
-    private static final Color INACTIVE_NAME  = new Color(232, 245, 224, 255);
+    private static final Color INACTIVE_NAME  = new Color(245, 252, 240, 255);
     private static final Color ACTIVE_NAME    = new Color(255, 255, 255, 255);
-    private static final Color DESC_COLOR     = new Color(150, 165, 148, 220);
-    private static final Color ROW_BASE       = new Color(18, 26, 20, 240);
-    private static final Color ROW_HOVER      = new Color(34, 48, 36, 250);
-    private static final Color TOGGLE_OFF_BG  = new Color(40, 50, 42, 255);
-    private static final Color TOGGLE_THUMB   = new Color(255, 255, 255, 255);
+    private static final Color DESC_COLOR     = new Color(190, 205, 185, 255);
+    private static final Color ROW_BASE       = new Color(14, 22, 16, 255);
+    private static final Color ROW_HOVER      = new Color(28, 42, 30, 255);
+    private static final Color ROW_BORDER     = new Color(255, 255, 255, 18);
+    /** Off-state toggle track: distinctly lighter than the card so the switch shape reads. */
+    private static final Color TOGGLE_OFF_BG  = new Color(70, 85, 72, 255);
+    private static final Color TOGGLE_THUMB   = new Color(245, 248, 240, 255);
 
     private final Module module;
     private final String title;
@@ -94,7 +96,7 @@ public class WAuroraModule extends WPressable implements AuroraWidget {
             (int) (ROW_BASE.b + (ROW_HOVER.b - ROW_BASE.b) * hv),
             (int) (ROW_BASE.a + (ROW_HOVER.a - ROW_BASE.a) * hv)
         );
-        renderer.roundedRect(x, y, width, height, radius, rowBg);
+        renderer.roundedRectStroke(x, y, width, height, radius, rowBg, ROW_BORDER, 1);
 
         // --- Active state: accent gradient + left border + glow halo ---
         double a = thumbAnim.get();
