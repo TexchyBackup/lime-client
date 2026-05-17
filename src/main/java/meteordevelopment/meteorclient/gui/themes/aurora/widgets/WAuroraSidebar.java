@@ -45,10 +45,8 @@ public class WAuroraSidebar extends WContainer implements AuroraWidget {
 
     public void addItem(String label, Runnable onClick) {
         items.add(new Item(label, onClick));
-        if (activeIndex == -1) {
-            activeIndex = 0;
-            stripeY.setInstant(stripeTargetFor(0));
-        }
+        if (activeIndex == -1) activeIndex = 0;
+        // stripe target is seeded lazily in onRender once theme is available
         invalidate();
     }
 
