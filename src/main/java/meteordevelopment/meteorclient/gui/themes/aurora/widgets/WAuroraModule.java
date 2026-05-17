@@ -20,52 +20,49 @@ import static meteordevelopment.meteorclient.MeteorClient.mc;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
 
+/**
+ * Module card: bigger size, stacked name + description, animated toggle switch on the right.
+ * Left click toggles. Right click opens module settings.
+ */
 public class WAuroraModule extends WPressable implements AuroraWidget {
-    private static final Color INACTIVE_TEXT  = new Color(220, 235, 215, 255);
-    /** Each module row is a visible opaque card on top of the glass panel. */
+    private static final Color INACTIVE_NAME  = new Color(232, 245, 224, 255);
+    private static final Color ACTIVE_NAME    = new Color(255, 255, 255, 255);
+    private static final Color DESC_COLOR     = new Color(150, 165, 148, 220);
     private static final Color ROW_BASE       = new Color(18, 26, 20, 240);
     private static final Color ROW_HOVER      = new Color(34, 48, 36, 250);
+    private static final Color TOGGLE_OFF_BG  = new Color(40, 50, 42, 255);
+    private static final Color TOGGLE_THUMB   = new Color(255, 255, 255, 255);
 
     private final Module module;
     private final String title;
 
-    private double titleWidth;
-
     /** 0→1: smooth hover background opacity (120 ms OUT_CUBIC). */
     private final Animated hoverAnim = new Animated(0, 0.12, Easing.OUT_CUBIC);
+    /** Thumb position 0 (off) → 1 (on). */
+    private final Animated thumbAnim = new Animated(0, 0.18, Easing.OUT_CUBIC);
 
-    /** 0→1: active gradient / border / pip visibility. Mirrors WMeteorModule's animationProgress2. */
-    private double activeAnim;
-
-    /** Pulse phase in seconds (0–2π), advanced only while module is active. */
+    /** Pulse phase in seconds for active glow. */
     private double pulsePhase;
 
     public WAuroraModule(Module module, String title) {
         this.module = module;
         this.title  = title;
-        this.tooltip = module.description;
+        this.tooltip = null; // description shown inline on the card; no tooltip needed
 
-        // Initialise at end-state so first frame shows the correct visual.
-        activeAnim = module.isActive() ? 1.0 : 0.0;
-        hoverAnim.setInstant(0);
+        if (module.isActive()) thumbAnim.setInstant(1);
     }
 
     @Override
     public double pad() {
-        return theme.scale(4);
+        return theme.scale(2);
     }
 
     @Override
     protected void onCalculateSize() {
-        double padH = theme.scale(10);
-        double padV = theme.scale(8);
-
-        if (titleWidth == 0) titleWidth = theme.textWidth(title);
-
-        // pip (4 px radius = 8 px diameter) + 4 px gap + title + trailing padding
-        double pipSpace = theme.scale(8 + 4);
-        width  = padH + pipSpace + titleWidth + padH;
-        height = padV + theme.textHeight() + padV;
+        // Card size: title row + description row + padding
+        // 52px tall is comfortable for two lines of text
+        width  = theme.scale(220);   // min width; parent expandX makes it bigger
+        height = theme.scale(52);
     }
 
     @Override
@@ -76,23 +73,20 @@ public class WAuroraModule extends WPressable implements AuroraWidget {
 
     @Override
     protected void onRender(GuiRenderer renderer, double mouseX, double mouseY, double delta) {
-        AuroraGuiTheme t  = theme();
-        AuroraPalette   p  = t.palette();
-        boolean active     = module.isActive();
+        AuroraGuiTheme t = theme();
+        AuroraPalette  p = t.palette();
+        boolean active   = module.isActive();
 
-        // --- Advance animations ---
-        double animSpeed = t.reducedMotion.get() ? 1_000_000 : (t.motionScale.get() > 0 ? t.motionScale.get() : 1_000_000);
-        activeAnim += delta * 6 * animSpeed * (active ? 1 : -1);
-        activeAnim  = Mth.clamp(activeAnim, 0, 1);
-
+        // --- Animations ---
         hoverAnim.set(mouseOver ? 1.0 : 0.0);
         hoverAnim.update(delta);
-
+        thumbAnim.set(active ? 1.0 : 0.0);
+        thumbAnim.update(delta);
         if (active) pulsePhase = (pulsePhase + delta * (Math.PI * 2 / 2.4)) % (Math.PI * 2);
 
         double radius = theme.scale(8);
 
-        // --- Background card (always visible — interpolates base→hover) ---
+        // --- Card background (base → hover interpolation) ---
         double hv = hoverAnim.get();
         Color rowBg = new Color(
             (int) (ROW_BASE.r + (ROW_HOVER.r - ROW_BASE.r) * hv),
@@ -102,47 +96,77 @@ public class WAuroraModule extends WPressable implements AuroraWidget {
         );
         renderer.roundedRect(x, y, width, height, radius, rowBg);
 
-        // Active: left-to-right gradient (accent 0.15 alpha → transparent) + glow
-        if (activeAnim > 0.001) {
+        // --- Active state: accent gradient + left border + glow halo ---
+        double a = thumbAnim.get();
+        if (a > 0.001) {
             Color accentBase = p.accent();
-            Color gradLeft  = new Color(accentBase.r, accentBase.g, accentBase.b, (int)(38 * activeAnim));
+            // Gradient overlay
+            Color gradLeft  = new Color(accentBase.r, accentBase.g, accentBase.b, (int)(28 * a));
             Color gradRight = new Color(accentBase.r, accentBase.g, accentBase.b, 0);
             renderer.gradientLinear(x, y, width, height, radius, gradLeft, gradRight, 0);
-
-            // Soft glow halo
-            Color glowCol = new Color(accentBase.r, accentBase.g, accentBase.b, (int)(20 * activeAnim));
-            renderer.glow(x, y, width, height, radius, theme.scale(8), glowCol);
-
-            // 2 px accent left border
-            Color borderCol = new Color(accentBase.r, accentBase.g, accentBase.b, (int)(255 * activeAnim));
-            renderer.quad(x, y + radius / 2, theme.scale(2), height - radius, borderCol);
+            // Glow
+            double pulse = 0.85 + 0.15 * Math.sin(pulsePhase);
+            Color glowCol = new Color(accentBase.r, accentBase.g, accentBase.b, (int)(28 * a * pulse));
+            renderer.glow(x, y, width, height, radius, theme.scale(10), glowCol);
+            // 3px accent left border
+            Color borderCol = new Color(accentBase.r, accentBase.g, accentBase.b, (int)(255 * a));
+            renderer.quad(x, y + radius / 2, theme.scale(3), height - radius, borderCol);
         }
 
-        // --- Pip dot ---
-        double padH   = theme.scale(10);
-        double pipR   = theme.scale(4);
-        double pipCX  = x + padH + pipR;
-        double pipCY  = y + height / 2.0;
-        double pipSize = pipR * 2;
-
-        if (activeAnim > 0.001) {
-            double pulseOpacity = 0.8 + 0.2 * Math.sin(pulsePhase);
-            Color pip = new Color(p.accent().r, p.accent().g, p.accent().b, (int)(255 * activeAnim * pulseOpacity));
-            renderer.quad(pipCX - pipR, pipCY - pipR, pipSize, pipSize, pip);
+        // --- Text: stacked name + description ---
+        double padH = theme.scale(14);
+        double textX = x + padH;
+        // Title text uses theme's 1.25× title path; centerY relative to half height
+        double titleH = theme.textHeight() * 1.25;
+        double descH  = theme.textHeight();
+        double totalH = titleH + theme.scale(3) + descH;
+        double startY = y + (height - totalH) / 2;
+        // Module name (title=true → renders bigger at 1.25× via the renderer's title pass)
+        Color nameColor = active ? ACTIVE_NAME : INACTIVE_NAME;
+        renderer.text(title, textX, startY, nameColor, true);
+        // Description (only if present)
+        String desc = module.description != null ? module.description : "";
+        if (!desc.isEmpty()) {
+            renderer.text(truncate(desc, width - padH * 2 - theme.scale(56)), textX, startY + titleH + theme.scale(3), DESC_COLOR, false);
         }
 
-        // --- Label ---
-        double textX = pipCX + pipR + theme.scale(4);
-        double textY = y + (height - theme.textHeight()) / 2.0;
-        Color textColor = active ? p.textPrimary() : INACTIVE_TEXT;
-        renderer.text(title, textX, textY, textColor, false);
-
-        // --- Trailing favorite star ---
-        if (module.favorite) {
-            double starSize = theme.textHeight();
-            double starX = x + width - padH - starSize;
-            double starY = y + (height - starSize) / 2.0;
-            renderer.quad(starX, starY, starSize, starSize, GuiRenderer.FAVORITE_YES, p.accent());
+        // --- Toggle switch on right ---
+        double trackW = theme.scale(34);
+        double trackH = theme.scale(16);
+        double trackX = x + width - padH - trackW;
+        double trackY = y + (height - trackH) / 2;
+        // Track color interpolates off-bg → accent based on thumb position
+        Color accent = p.accent();
+        Color trackColor = new Color(
+            (int)(TOGGLE_OFF_BG.r + (accent.r - TOGGLE_OFF_BG.r) * a),
+            (int)(TOGGLE_OFF_BG.g + (accent.g - TOGGLE_OFF_BG.g) * a),
+            (int)(TOGGLE_OFF_BG.b + (accent.b - TOGGLE_OFF_BG.b) * a),
+            255
+        );
+        renderer.roundedRect(trackX, trackY, trackW, trackH, trackH / 2, trackColor);
+        // Subtle glow under the track when on
+        if (a > 0.05) {
+            Color tglow = new Color(accent.r, accent.g, accent.b, (int)(60 * a));
+            renderer.glow(trackX, trackY, trackW, trackH, trackH / 2, theme.scale(6), tglow);
         }
+        // Thumb (white circle, slides left↔right)
+        double thumbSize = trackH - theme.scale(4);
+        double thumbX = trackX + theme.scale(2) + (trackW - thumbSize - theme.scale(4)) * a;
+        double thumbY = trackY + theme.scale(2);
+        renderer.roundedRect(thumbX, thumbY, thumbSize, thumbSize, thumbSize / 2, TOGGLE_THUMB);
+    }
+
+    private String truncate(String s, double maxWidth) {
+        if (theme.textWidth(s) <= maxWidth) return s;
+        // Binary search the longest prefix that fits with "..."
+        String ellipsis = "...";
+        double ew = theme.textWidth(ellipsis);
+        int lo = 0, hi = s.length();
+        while (lo < hi) {
+            int mid = (lo + hi + 1) / 2;
+            if (theme.textWidth(s.substring(0, mid)) + ew <= maxWidth) lo = mid;
+            else hi = mid - 1;
+        }
+        return s.substring(0, Math.max(0, lo)) + ellipsis;
     }
 }
