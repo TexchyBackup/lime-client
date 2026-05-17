@@ -413,9 +413,16 @@ public class ModulesScreen extends TabScreen {
                 if (!Config.get().hiddenModules.get().contains(m)) mods.add(m);
             }
             contentCrumb = new WAuroraBreadcrumb(cat.name + " . " + mods.size() + " modules");
-            contentScroll.add(contentCrumb).pad(4);
-            for (Module m : mods) {
-                contentScroll.add(theme.module(m)).expandX();
+            contentScroll.add(contentCrumb).pad(4).expandX();
+
+            // 2-column grid using WTable. Row-major fill: m0,m1 -> row; m2,m3 -> row; ...
+            meteordevelopment.meteorclient.gui.widgets.containers.WTable grid =
+                contentScroll.add(new meteordevelopment.meteorclient.gui.widgets.containers.WTable()).expandX().widget();
+            grid.horizontalSpacing = 6;
+            grid.verticalSpacing = 4;
+            for (int i = 0; i < mods.size(); i++) {
+                grid.add(theme.module(mods.get(i))).expandX();
+                if (i % 2 == 1 && i < mods.size() - 1) grid.row();
             }
         }
 

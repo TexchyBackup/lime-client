@@ -22,9 +22,9 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
 
 public class WAuroraModule extends WPressable implements AuroraWidget {
     private static final Color INACTIVE_TEXT  = new Color(220, 235, 215, 255);
-    /** Each module row is a visible opaque-ish card on top of the glass panel. */
-    private static final Color ROW_BASE       = new Color(22, 32, 24, 215);
-    private static final Color ROW_HOVER      = new Color(35, 50, 38, 235);
+    /** Each module row is a visible opaque card on top of the glass panel. */
+    private static final Color ROW_BASE       = new Color(18, 26, 20, 240);
+    private static final Color ROW_HOVER      = new Color(34, 48, 36, 250);
 
     private final Module module;
     private final String title;
