@@ -457,7 +457,8 @@ public class ModulesScreen extends TabScreen {
             double bodyBottom = y + height - statusH;
             double bodyH = bodyBottom - bodyTop;
 
-            // Sidebar
+            // Sidebar — propagate theme defensively (init() ordering can leave it null)
+            sidebar.theme = theme;
             sidebar.x = x + pad;
             sidebar.y = bodyTop + pad;
             sidebar.calculateSize(); // ensures width=110 scaled
@@ -466,6 +467,7 @@ public class ModulesScreen extends TabScreen {
             // Content view
             double contentX = sidebar.x + sidebar.width + pad;
             double contentW = (x + width - pad) - contentX;
+            contentScroll.theme = theme;
             contentScroll.x = contentX;
             contentScroll.y = bodyTop + pad;
             contentScroll.maxHeight = bodyH - pad * 2;
@@ -478,11 +480,13 @@ public class ModulesScreen extends TabScreen {
             contentScroll.calculateWidgetPositions();
 
             // Header breadcrumb — center area of header bar
+            headerCrumb.theme = theme;
             headerCrumb.calculateSize();
             headerCrumb.x = x + theme.scale(120);
             headerCrumb.y = y + (headerH - headerCrumb.height) / 2;
 
             // Status bar
+            statusBar.theme = theme;
             statusBar.x = x;
             statusBar.y = y + height - statusH;
             statusBar.width = width;
