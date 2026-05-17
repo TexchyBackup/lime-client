@@ -6,6 +6,9 @@
 package meteordevelopment.meteorclient.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import meteordevelopment.meteorclient.gui.renderer.primitives.Glow;
+import meteordevelopment.meteorclient.gui.renderer.primitives.Gradient;
+import meteordevelopment.meteorclient.gui.renderer.primitives.RoundedRect;
 import meteordevelopment.meteorclient.renderer.MeshUniforms;
 import meteordevelopment.meteorclient.systems.modules.Modules;
 import meteordevelopment.meteorclient.systems.modules.misc.InventoryTweaks;
@@ -27,6 +30,9 @@ public abstract class RenderSystemMixin {
         PostProcessShader.flipFrame();
         ChamsShader.flipFrame();
         OutlineUniforms.flipFrame();
+        RoundedRect.flipFrame();
+        Glow.flipFrame();
+        Gradient.flipFrame();
 
         if (Modules.get() == null || mc.player == null) return;
         if (Modules.get().get(InventoryTweaks.class).frameInput()) ((MinecraftAccessor) mc).meteor$handleInputEvents();

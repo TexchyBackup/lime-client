@@ -37,6 +37,10 @@ public final class RoundedRect {
     private static final DynamicUniformStorage<RectUniform> STORAGE =
         new DynamicUniformStorage<>("Aurora - RoundedRect UBO", UNIFORM_SIZE, 16);
 
+    public static void flipFrame() {
+        STORAGE.endFrame();
+    }
+
     public static void draw(double x, double y, double w, double h, double radius, Color fill) {
         draw(x, y, w, h, radius, fill, null, 0.0);
     }

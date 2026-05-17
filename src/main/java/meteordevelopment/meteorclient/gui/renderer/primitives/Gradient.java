@@ -38,6 +38,10 @@ public final class Gradient {
     private static final DynamicUniformStorage<GradUniform> STORAGE =
         new DynamicUniformStorage<>("Aurora - Gradient UBO", UNIFORM_SIZE, 16);
 
+    public static void flipFrame() {
+        STORAGE.endFrame();
+    }
+
     public static void linear(double x, double y, double w, double h, Color colorA, Color colorB, double angleDegrees) {
         linear(x, y, w, h, 0, colorA, colorB, angleDegrees);
     }

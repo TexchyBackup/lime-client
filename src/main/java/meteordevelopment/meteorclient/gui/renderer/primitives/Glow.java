@@ -33,6 +33,10 @@ public final class Glow {
     private static final DynamicUniformStorage<GlowUniform> STORAGE =
         new DynamicUniformStorage<>("Aurora - Glow UBO", UNIFORM_SIZE, 16);
 
+    public static void flipFrame() {
+        STORAGE.endFrame();
+    }
+
     public static void draw(double x, double y, double w, double h, double radius, double glowRadius, Color color) {
         if (w <= 0 || h <= 0) return;
 
