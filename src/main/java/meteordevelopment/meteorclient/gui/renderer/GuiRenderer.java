@@ -123,13 +123,12 @@ public class GuiRenderer {
         r.render();
         rTex.render("u_Texture", TEXTURE.getTextureView(), TEXTURE.getSampler());
 
-        // Aurora SDF primitives — must run BEFORE text so text composites on top.
-        // MESH_UNIFORMS pulls projection from RenderUtils.projection, which may have
-        // been overwritten by the world pass; re-apply pixel-space ortho here.
+        // Aurora SDF primitives — run BEFORE text so text composites on top.
+        // We do NOT swap projection here: text rendering would break. Both r.render
+        // and the SDF MeshRenderer calls share whatever ortho projection MC has
+        // active for GUI rendering at this point.
         if (!postTasks.isEmpty()) {
-            meteordevelopment.meteorclient.utils.Utils.unscaledProjection();
             for (Runnable task : postTasks) task.run();
-            meteordevelopment.meteorclient.utils.Utils.scaledProjection();
             postTasks.clear();
         }
 
