@@ -8,6 +8,7 @@ package meteordevelopment.meteorclient.gui.themes.aurora;
 import meteordevelopment.meteorclient.gui.DefaultSettingsWidgetFactory;
 import meteordevelopment.meteorclient.gui.renderer.packer.GuiTexture;
 import meteordevelopment.meteorclient.gui.renderer.primitives.BackdropBlur;
+import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraModule;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraSection;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraTopBar;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraView;
@@ -21,6 +22,7 @@ import meteordevelopment.meteorclient.gui.widgets.containers.WView;
 import meteordevelopment.meteorclient.gui.widgets.containers.WWindow;
 import meteordevelopment.meteorclient.gui.widgets.pressable.*;
 import meteordevelopment.meteorclient.settings.*;
+import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 
 public class AuroraGuiTheme extends MeteorGuiTheme {
@@ -134,5 +136,10 @@ public class AuroraGuiTheme extends MeteorGuiTheme {
     @Override
     public WFavorite favorite(boolean checked) {
         return w(new WAuroraFavorite(checked));
+    }
+
+    @Override
+    public WWidget module(Module module, String title) {
+        return w(new WAuroraModule(module, title));
     }
 }
