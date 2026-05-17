@@ -8,6 +8,7 @@ package meteordevelopment.meteorclient.gui.themes.aurora;
 import meteordevelopment.meteorclient.gui.DefaultSettingsWidgetFactory;
 import meteordevelopment.meteorclient.gui.renderer.packer.GuiTexture;
 import meteordevelopment.meteorclient.gui.renderer.primitives.BackdropBlur;
+import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraHorizontalSeparator;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraModule;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraSection;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraTopBar;
@@ -19,6 +20,7 @@ import meteordevelopment.meteorclient.gui.themes.aurora.widgets.input.WAuroraSli
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.input.WAuroraTextBox;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.pressable.*;
 import meteordevelopment.meteorclient.gui.themes.meteor.MeteorGuiTheme;
+import meteordevelopment.meteorclient.gui.widgets.WHorizontalSeparator;
 import meteordevelopment.meteorclient.gui.widgets.WQuad;
 import meteordevelopment.meteorclient.gui.widgets.WTopBar;
 import meteordevelopment.meteorclient.gui.widgets.WWidget;
@@ -171,5 +173,10 @@ public class AuroraGuiTheme extends MeteorGuiTheme {
     @Override
     public WQuad quad(Color color) {
         return w(new WAuroraColorEdit(color));
+    }
+
+    @Override
+    public WHorizontalSeparator horizontalSeparator(String text) {
+        return w(new WAuroraHorizontalSeparator(text));
     }
 }

@@ -124,6 +124,34 @@ public class WAuroraDetailPane extends WContainer implements AuroraWidget {
         }
     }
 
+    /**
+     * Measures the vertical space the module description occupies under the header.
+     * Caller adds the (small) padding it wants between description and the body content.
+     */
+    private double descriptionBlockHeight() {
+        if (module == null || module.description == null || module.description.isEmpty()) return 0;
+        double pad = theme.scale(SIDE_PAD);
+        double maxW = width - pad * 2;
+        double lineH = theme.textHeight() + theme.scale(2);
+        int lines = 0;
+        String desc = module.description;
+        int start = 0;
+        int len = desc.length();
+        while (start < len && lines < 3) {
+            int end = len;
+            while (end > start && theme.textWidth(desc.substring(start, end)) > maxW) end--;
+            if (end <= start) end = Math.min(len, start + 1);
+            if (end < len) {
+                int sp = desc.lastIndexOf(' ', end);
+                if (sp > start) end = sp;
+            }
+            lines++;
+            start = end;
+            while (start < len && desc.charAt(start) == ' ') start++;
+        }
+        return lines * lineH;
+    }
+
     @Override
     protected void onCalculateWidgetPositions() {
         if (module == null) return;
@@ -132,7 +160,11 @@ public class WAuroraDetailPane extends WContainer implements AuroraWidget {
         double headerH = theme.scale(HEADER_HEIGHT);
         double footerH = theme.scale(FOOTER_HEIGHT);
 
-        double bodyTop = y + headerH + theme.scale(8);
+        // Reserve room for description block (drawn in onRender below the header)
+        double descTopGap = theme.scale(10);
+        double descBottomGap = theme.scale(12);
+        double descH = descriptionBlockHeight();
+        double bodyTop = y + headerH + (descH > 0 ? descTopGap + descH + descBottomGap : theme.scale(8));
         double bodyBottom = y + height - footerH - theme.scale(8);
         double bodyH = Math.max(40, bodyBottom - bodyTop);
 
@@ -391,21 +423,21 @@ public class WAuroraDetailPane extends WContainer implements AuroraWidget {
         renderer.text(xs, closeX + (closeSize - xsW) / 2, closeY + (closeSize - theme.textHeight()) / 2,
             closeHover ? p.textPrimary() : p.textSecondary(), false);
 
-        // 8. Description block (below header)
+        // 8. Description block (below header). Cap at 3 lines — the layout reserves room
+        //    for the same number of lines via descriptionBlockHeight().
         double descY = y + headerH + theme.scale(10);
         String desc = module.description != null ? module.description : "";
         if (!desc.isEmpty()) {
-            // Simple word wrap
             double maxW = width - pad * 2;
             int start = 0;
             int len = desc.length();
             double lineY = descY;
             double lineH = theme.textHeight() + theme.scale(2);
-            while (start < len) {
+            int linesDrawn = 0;
+            while (start < len && linesDrawn < 3) {
                 int end = len;
                 while (end > start && theme.textWidth(desc.substring(start, end)) > maxW) end--;
                 if (end <= start) end = Math.min(len, start + 1);
-                // Try to break on space
                 if (end < len) {
                     int sp = desc.lastIndexOf(' ', end);
                     if (sp > start) end = sp;
@@ -414,7 +446,7 @@ public class WAuroraDetailPane extends WContainer implements AuroraWidget {
                 lineY += lineH;
                 start = end;
                 while (start < len && desc.charAt(start) == ' ') start++;
-                if (lineY - descY > theme.scale(40)) break; // cap to ~3 lines
+                linesDrawn++;
             }
         }
 
