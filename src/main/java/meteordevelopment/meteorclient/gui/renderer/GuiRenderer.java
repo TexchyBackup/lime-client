@@ -12,6 +12,7 @@ import meteordevelopment.meteorclient.gui.GuiTheme;
 import meteordevelopment.meteorclient.gui.renderer.operations.TextOperation;
 import meteordevelopment.meteorclient.gui.renderer.packer.GuiTexture;
 import meteordevelopment.meteorclient.gui.renderer.packer.TexturePacker;
+import meteordevelopment.meteorclient.gui.renderer.primitives.Glow;
 import meteordevelopment.meteorclient.gui.renderer.primitives.RoundedRect;
 import meteordevelopment.meteorclient.gui.widgets.WWidget;
 import meteordevelopment.meteorclient.renderer.Renderer2D;
@@ -87,6 +88,7 @@ public class GuiRenderer {
         this.graphics.nextStratum();
 
         RoundedRect.beginFrame();
+        Glow.beginFrame();
 
         var matrices = graphics.pose();
         matrices.pushMatrix();
@@ -261,6 +263,10 @@ public class GuiRenderer {
 
     public void roundedRectStroke(double x, double y, double w, double h, double radius, Color fill, Color border, double borderWidth) {
         absolutePost(() -> RoundedRect.draw(x, y, w, h, radius, fill, border, borderWidth));
+    }
+
+    public void glow(double x, double y, double w, double h, double radius, double glowRadius, Color color) {
+        absolutePost(() -> Glow.draw(x, y, w, h, radius, glowRadius, color));
     }
 
     public void text(String text, double x, double y, Color color, boolean title) {
