@@ -12,6 +12,7 @@ import meteordevelopment.meteorclient.gui.GuiTheme;
 import meteordevelopment.meteorclient.gui.renderer.operations.TextOperation;
 import meteordevelopment.meteorclient.gui.renderer.packer.GuiTexture;
 import meteordevelopment.meteorclient.gui.renderer.packer.TexturePacker;
+import meteordevelopment.meteorclient.gui.renderer.primitives.BackdropBlur;
 import meteordevelopment.meteorclient.gui.renderer.primitives.Glow;
 import meteordevelopment.meteorclient.gui.renderer.primitives.Gradient;
 import meteordevelopment.meteorclient.gui.renderer.primitives.RoundedRect;
@@ -91,6 +92,8 @@ public class GuiRenderer {
         RoundedRect.beginFrame();
         Glow.beginFrame();
         Gradient.beginFrame();
+
+        if (BackdropBlur.isEnabled()) BackdropBlur.captureAndBlur();
 
         var matrices = graphics.pose();
         matrices.pushMatrix();
