@@ -168,6 +168,19 @@ public abstract class MeteorRenderPipelines {
         .build()
     );
 
+    public static final RenderPipeline AURORA_BLUR_SAMPLE = add(new ExtendedRenderPipelineBuilder(MESH_UNIFORMS)
+        .withLocation(MeteorClient.identifier("pipeline/aurora_blur_sample"))
+        .withVertexFormat(MeteorVertexFormats.POS2_TEXTURE_COLOR, VertexFormat.Mode.TRIANGLES)
+        .withVertexShader(MeteorClient.identifier("shaders/aurora_blur_sample.vert"))
+        .withFragmentShader(MeteorClient.identifier("shaders/aurora_blur_sample.frag"))
+        .withSampler("u_Backdrop")
+        .withUniform("AuroraBlurSampleData", UniformType.UNIFORM_BUFFER)
+        .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+        .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+        .withCull(true)
+        .build()
+    );
+
     // Post Process
 
     public static final RenderPipeline POST_OUTLINE = add(new ExtendedRenderPipelineBuilder()

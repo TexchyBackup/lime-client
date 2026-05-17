@@ -1,0 +1,21 @@
+#version 330 core
+
+layout (location = 0) in vec2 pos;
+layout (location = 1) in vec2 uv;
+layout (location = 2) in vec4 color;
+
+layout (std140) uniform MeshData {
+    mat4 u_Proj;
+    mat4 u_ModelView;
+};
+
+out vec2 v_Local;
+out vec2 v_ScreenUV;
+out vec4 v_Color;
+
+void main() {
+    gl_Position = u_Proj * u_ModelView * vec4(pos, 0.0, 1.0);
+    v_Local = uv;
+    v_ScreenUV = gl_Position.xy / gl_Position.w * 0.5 + 0.5;
+    v_Color = color;
+}

@@ -12,9 +12,13 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.textures.TextureFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import meteordevelopment.meteorclient.renderer.FixedUniformStorage;
+import meteordevelopment.meteorclient.renderer.MeshBuilder;
 import meteordevelopment.meteorclient.renderer.MeshRenderer;
 import meteordevelopment.meteorclient.renderer.MeteorRenderPipelines;
+import meteordevelopment.meteorclient.renderer.MeteorVertexFormats;
+import meteordevelopment.meteorclient.utils.render.color.Color;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.DynamicUniformStorage;
 
@@ -41,11 +45,24 @@ public final class BackdropBlur {
         .putFloat()   // offset
         .get();
 
+    private static final int SAMPLE_UNIFORM_SIZE = new Std140SizeCalculator()
+        .putVec2()    // halfSize
+        .putFloat()   // radius
+        .putFloat()   // _pad
+        .get();
+
+    private static final DynamicUniformStorage<BlurSampleUniform> SAMPLE_STORAGE =
+        new DynamicUniformStorage<>("Aurora - BackdropBlur Sample UBO", SAMPLE_UNIFORM_SIZE, 16);
+
     private static GpuTextureView[] fbos;
     private static FixedUniformStorage<BlurUniformData> storage;
     private static GpuBufferSlice[] ubos;
     private static int lastWidth, lastHeight;
     private static boolean enabled = true;
+
+    public static void flipFrame() {
+        SAMPLE_STORAGE.endFrame();
+    }
 
     public static boolean isEnabled() {
         return enabled;
@@ -126,14 +143,44 @@ public final class BackdropBlur {
     }
 
     /**
-     * Stub: renders the blurred backdrop into the given rect with the given mask
-     * and tint. Requires an SDF-aware sampling pipeline (not yet wired); for now
-     * this is a no-op so callers can be written ahead of time.
+     * Renders the blurred backdrop into the given rect with an anti-aliased
+     * rounded-rect mask and a darkening tint (0 = blurred only, 1 = full black).
+     * No-op if blur is disabled or the blurred texture is not yet available.
      */
-    @SuppressWarnings("unused")
     public static void sampleInto(double x, double y, double w, double h, double radius, double tint) {
-        // TODO: requires a dedicated pipeline that samples u_Backdrop with a UV-to-screen mapping
-        // and applies the rounded SDF mask + darkening tint. Not yet implemented.
+        if (!enabled) return;
+        if (w <= 0 || h <= 0) return;
+        GpuTextureView backdrop = blurred();
+        if (backdrop == null) return;
+
+        float hw = (float) (w * 0.5);
+        float hh = (float) (h * 0.5);
+        float cx = (float) (x + hw);
+        float cy = (float) (y + hh);
+        float r = (float) Math.min(radius, Math.min(hw, hh));
+        float t = (float) Math.max(0.0, Math.min(1.0, tint));
+
+        GpuBufferSlice slice = SAMPLE_STORAGE.writeUniform(new BlurSampleUniform(hw, hh, r));
+        Color tintColor = new Color(255, 255, 255, Math.round(t * 255f));
+
+        MeshBuilder mb = new MeshBuilder(MeteorVertexFormats.POS2_TEXTURE_COLOR, VertexFormat.Mode.TRIANGLES);
+        mb.begin();
+        mb.ensureQuadCapacity();
+        mb.quad(
+            mb.vec2(cx - hw, cy - hh).vec2(-hw, -hh).color(tintColor).next(),
+            mb.vec2(cx - hw, cy + hh).vec2(-hw,  hh).color(tintColor).next(),
+            mb.vec2(cx + hw, cy + hh).vec2( hw,  hh).color(tintColor).next(),
+            mb.vec2(cx + hw, cy - hh).vec2( hw, -hh).color(tintColor).next()
+        );
+        mb.end();
+
+        MeshRenderer.begin()
+            .attachments(Minecraft.getInstance().getMainRenderTarget())
+            .pipeline(MeteorRenderPipelines.AURORA_BLUR_SAMPLE)
+            .mesh(mb)
+            .uniform("AuroraBlurSampleData", slice)
+            .sampler("u_Backdrop", backdrop, RenderSystem.getSamplerCache().getClampToEdge(FilterMode.LINEAR))
+            .end();
     }
 
     private BackdropBlur() {}
@@ -145,6 +192,17 @@ public final class BackdropBlur {
             Std140Builder.intoBuffer(buffer)
                 .putVec2(halfTexelSizeX, halfTexelSizeY)
                 .putFloat(offset);
+        }
+    }
+
+    private record BlurSampleUniform(float halfX, float halfY, float radius)
+        implements DynamicUniformStorage.DynamicUniform {
+        @Override
+        public void write(ByteBuffer buffer) {
+            Std140Builder.intoBuffer(buffer)
+                .putVec2(halfX, halfY)
+                .putFloat(radius)
+                .putFloat(0.0f);
         }
     }
 }
