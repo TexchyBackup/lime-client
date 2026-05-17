@@ -21,7 +21,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
 
 public class WAuroraModule extends WPressable implements AuroraWidget {
-    private static final Color INACTIVE_TEXT  = new Color(180, 195, 175, 220);
+    private static final Color INACTIVE_TEXT  = new Color(220, 235, 215, 255);
     private static final Color HOVER_FILL     = new Color(255, 255, 255, 16);
 
     private final Module module;
