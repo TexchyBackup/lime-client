@@ -92,6 +92,9 @@ dependencies {
     jij(libs.netty.handler.proxy) { isTransitive = false }
     jij(libs.netty.codec.socks) { isTransitive = false }
     jij(libs.waybackauthlib)
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 sourceSets {
@@ -212,6 +215,10 @@ tasks {
             dependsOn("javadocJar")
         }
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 publishing {
