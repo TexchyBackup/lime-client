@@ -101,6 +101,13 @@ public class WAuroraDetailPane extends WContainer implements AuroraWidget {
         return module;
     }
 
+    /** Called from the screen's tick() so the settings widget tree can refresh when setting
+     *  visibility changes. */
+    public void tickSettings() {
+        if (module == null || settingsHost == null) return;
+        module.settings.tick(settingsHost, theme);
+    }
+
     /** 0 = fully closed, 1 = fully open. */
     public double slideValue() {
         return slideAnim.get();
@@ -175,8 +182,9 @@ public class WAuroraDetailPane extends WContainer implements AuroraWidget {
 
         // Wrap the existing settings widget pipeline so it lays out inside the pane.
         // Per task spec: if it returns a WTable of name|control pairs, use as-is.
-        settingsHost = (WContainer) theme.settings(module.settings);
-        contentScroll.add(settingsHost).expandX();
+        WWidget settingsWidget = theme.settings(module.settings);
+        contentScroll.add(settingsWidget).expandX();
+        if (settingsWidget instanceof WContainer wc) settingsHost = wc;
 
         // Footer with "Reset defaults" + "Bind"
         footerRow = (WHorizontalList) theme.horizontalList();

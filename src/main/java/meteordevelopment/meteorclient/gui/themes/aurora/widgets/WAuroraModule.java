@@ -8,9 +8,11 @@ package meteordevelopment.meteorclient.gui.themes.aurora.widgets;
 import meteordevelopment.meteorclient.gui.renderer.GuiRenderer;
 import meteordevelopment.meteorclient.gui.renderer.anim.Animated;
 import meteordevelopment.meteorclient.gui.renderer.anim.Easing;
+import meteordevelopment.meteorclient.gui.screens.ModulesScreen;
 import meteordevelopment.meteorclient.gui.themes.aurora.AuroraGuiTheme;
 import meteordevelopment.meteorclient.gui.themes.aurora.AuroraPalette;
 import meteordevelopment.meteorclient.gui.themes.aurora.AuroraWidget;
+import meteordevelopment.meteorclient.gui.widgets.WWidget;
 import meteordevelopment.meteorclient.gui.widgets.pressable.WPressable;
 import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.meteorclient.utils.render.color.Color;
@@ -70,7 +72,26 @@ public class WAuroraModule extends WPressable implements AuroraWidget {
     @Override
     protected void onPressed(int button) {
         if (button == GLFW_MOUSE_BUTTON_LEFT) module.toggle();
-        else if (button == GLFW_MOUSE_BUTTON_RIGHT) mc.setScreen(theme.moduleScreen(module));
+        else if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+            // Try to find an ancestor WAuroraBrowser and slide its detail pane in.
+            // If we're being rendered outside a browser (search results, etc.), fall back
+            // to the legacy full-screen module screen.
+            ModulesScreen.WAuroraBrowser browser = findAuroraBrowser();
+            if (browser != null) {
+                browser.showDetail(module);
+            } else {
+                mc.setScreen(theme.moduleScreen(module));
+            }
+        }
+    }
+
+    private ModulesScreen.WAuroraBrowser findAuroraBrowser() {
+        WWidget p = this.parent;
+        while (p != null) {
+            if (p instanceof ModulesScreen.WAuroraBrowser b) return b;
+            p = p.parent;
+        }
+        return null;
     }
 
     @Override

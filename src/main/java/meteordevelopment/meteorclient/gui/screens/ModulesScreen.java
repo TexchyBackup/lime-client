@@ -13,6 +13,7 @@ import meteordevelopment.meteorclient.gui.tabs.Tabs;
 import meteordevelopment.meteorclient.gui.themes.aurora.AuroraGuiTheme;
 import meteordevelopment.meteorclient.gui.themes.aurora.AuroraPalette;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraBreadcrumb;
+import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraDetailPane;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraSidebar;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraStatusBar;
 import meteordevelopment.meteorclient.gui.utils.Cell;
@@ -178,6 +179,12 @@ public class ModulesScreen extends TabScreen {
     public boolean keyPressed(KeyEvent value) {
         if (locked) return false;
 
+        // ESC closes the Aurora detail pane first instead of the whole browser
+        if (value.key() == GLFW_KEY_ESCAPE && auroraBrowser != null && auroraBrowser.isDetailVisible()) {
+            auroraBrowser.hideDetail();
+            return true;
+        }
+
         boolean cntrl = MacosUtil.IS_MACOS ? value.modifiers() == GLFW_MOD_SUPER : value.modifiers() == GLFW_MOD_CONTROL;
 
         if (cntrl && value.key() == GLFW_KEY_F) {
@@ -233,6 +240,14 @@ public class ModulesScreen extends TabScreen {
         }
 
         return !modules.isEmpty();
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (auroraBrowser != null && auroraBrowser.detailPane != null) {
+            auroraBrowser.detailPane.tickSettings();
+        }
     }
 
     @Override
@@ -337,7 +352,7 @@ public class ModulesScreen extends TabScreen {
      * inside {@link #onRender}; layout is computed in {@link #onCalculateSize} /
      * {@link #onCalculateWidgetPositions} to fix the panel to ~80% of the viewport.
      */
-    protected class WAuroraBrowser extends WContainer {
+    public class WAuroraBrowser extends WContainer {
         private static final double HEADER_HEIGHT = 36;
         private static final double STATUS_HEIGHT = 22;
         private static final double RADIUS = 14;
@@ -348,7 +363,10 @@ public class ModulesScreen extends TabScreen {
         private WAuroraBreadcrumb contentCrumb;
         private WView contentScroll;
         private WAuroraStatusBar statusBar;
+        private WAuroraDetailPane detailPane;
         private int selectedIndex = 0;
+        /** True when the current rebuildContent() pass laid out a 1-column grid (pane open). */
+        private boolean lastBuiltSingleColumn = false;
 
         @Override
         public void init() {
@@ -392,8 +410,34 @@ public class ModulesScreen extends TabScreen {
             statusBar.setStatus("lime client");
             add(statusBar);
 
+            // Detail pane (right-side sliding settings panel). Added last so it renders on top.
+            detailPane = new WAuroraDetailPane((AuroraGuiTheme) theme);
+            detailPane.onClose = () -> {
+                rebuildContent();
+                invalidate();
+            };
+            add(detailPane);
+
             updateBreadcrumbs();
             updateStats();
+        }
+
+        public void showDetail(Module m) {
+            if (detailPane == null) return;
+            detailPane.show(m);
+            rebuildContent();
+            invalidate();
+        }
+
+        public boolean isDetailVisible() {
+            return detailPane != null && (detailPane.isOpen() || detailPane.slideValue() > 0.01);
+        }
+
+        public void hideDetail() {
+            if (detailPane == null) return;
+            detailPane.hide();
+            rebuildContent();
+            invalidate();
         }
 
         private void selectCategory(int idx) {
@@ -415,14 +459,18 @@ public class ModulesScreen extends TabScreen {
             contentCrumb = new WAuroraBreadcrumb(cat.name + " . " + mods.size() + " modules");
             contentScroll.add(contentCrumb).pad(4).expandX();
 
-            // 2-column grid using WTable. Row-major fill: m0,m1 -> row; m2,m3 -> row; ...
+            // Column count: 1 when detail pane is open, 2 otherwise
+            boolean single = detailPane != null && detailPane.isOpen();
+            lastBuiltSingleColumn = single;
+            int cols = single ? 1 : 2;
+
             meteordevelopment.meteorclient.gui.widgets.containers.WTable grid =
                 contentScroll.add(new meteordevelopment.meteorclient.gui.widgets.containers.WTable()).expandX().widget();
             grid.horizontalSpacing = 6;
             grid.verticalSpacing = 4;
             for (int i = 0; i < mods.size(); i++) {
                 grid.add(theme.module(mods.get(i))).expandX();
-                if (i % 2 == 1 && i < mods.size() - 1) grid.row();
+                if (i % cols == cols - 1 && i < mods.size() - 1) grid.row();
             }
         }
 
@@ -471,9 +519,22 @@ public class ModulesScreen extends TabScreen {
             sidebar.calculateSize(); // ensures width=110 scaled
             sidebar.height = bodyH - pad * 2;
 
-            // Content view
+            // Detail pane occupies the right side; it slides in/out
+            double paneW = theme.scale(WAuroraDetailPane.PANE_WIDTH);
+            double slide = detailPane != null ? detailPane.slideValue() : 0;
+            double effectivePaneW = paneW * slide;
+
+            // Content view (left of pane)
             double contentX = sidebar.x + sidebar.width + pad;
-            double contentW = (x + width - pad) - contentX;
+            // Reserve room for the pane when open (and during the slide animation)
+            double contentRight = (x + width - pad);
+            if (slide > 0.001) contentRight -= effectivePaneW + pad;
+            double contentW = contentRight - contentX;
+            // Switch between 1-/2-col grid based on the *target* open state, not the animated value
+            boolean paneTargetOpen = detailPane != null && detailPane.isOpen();
+            if (paneTargetOpen != lastBuiltSingleColumn) {
+                rebuildContent();
+            }
             contentScroll.theme = theme;
             contentScroll.x = contentX;
             contentScroll.y = bodyTop + pad;
@@ -485,6 +546,21 @@ public class ModulesScreen extends TabScreen {
             contentScroll.width = contentW;
             contentScroll.height = Math.min(contentScroll.height, bodyH - pad * 2);
             contentScroll.calculateWidgetPositions();
+
+            // Position the detail pane along the right edge. When slide=0 it sits offscreen-right.
+            if (detailPane != null) {
+                detailPane.theme = theme;
+                detailPane.width = paneW;
+                detailPane.height = bodyH - pad * 2;
+                // Slide in from offscreen-right: when slide=1, x = rightEdge - paneW; when 0, x = rightEdge
+                double rightEdge = x + width - pad;
+                detailPane.x = rightEdge - effectivePaneW;
+                detailPane.y = bodyTop + pad;
+                detailPane.calculateSize();
+                detailPane.width = paneW;
+                detailPane.height = bodyH - pad * 2;
+                detailPane.calculateWidgetPositions();
+            }
 
             // Header breadcrumb — center area of header bar
             headerCrumb.theme = theme;
@@ -513,6 +589,13 @@ public class ModulesScreen extends TabScreen {
         protected void onRender(GuiRenderer renderer, double mouseX, double mouseY, double delta) {
             if (!(theme instanceof AuroraGuiTheme)) return;
             AuroraPalette p = ((AuroraGuiTheme) theme).palette();
+
+            // While the pane is mid-slide, keep recalculating layout so the content area resizes smoothly.
+            if (detailPane != null) {
+                double s = detailPane.slideValue();
+                boolean mid = (detailPane.isOpen() && s < 0.999) || (!detailPane.isOpen() && s > 0.001);
+                if (mid) invalidate();
+            }
 
             // Refresh dynamic state per frame
             updateStats();
