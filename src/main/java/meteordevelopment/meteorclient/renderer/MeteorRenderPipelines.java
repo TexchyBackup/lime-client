@@ -130,6 +130,44 @@ public abstract class MeteorRenderPipelines {
         .build()
     );
 
+    // Aurora primitives
+
+    public static final RenderPipeline AURORA_ROUNDED_RECT = add(new ExtendedRenderPipelineBuilder(MESH_UNIFORMS)
+        .withLocation(MeteorClient.identifier("pipeline/aurora_rounded_rect"))
+        .withVertexFormat(MeteorVertexFormats.POS2_TEXTURE_COLOR, VertexFormat.Mode.TRIANGLES)
+        .withVertexShader(MeteorClient.identifier("shaders/aurora_rounded_rect.vert"))
+        .withFragmentShader(MeteorClient.identifier("shaders/aurora_rounded_rect.frag"))
+        .withUniform("AuroraRectData", UniformType.UNIFORM_BUFFER)
+        .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+        .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+        .withCull(true)
+        .build()
+    );
+
+    public static final RenderPipeline AURORA_GLOW = add(new ExtendedRenderPipelineBuilder(MESH_UNIFORMS)
+        .withLocation(MeteorClient.identifier("pipeline/aurora_glow"))
+        .withVertexFormat(MeteorVertexFormats.POS2_TEXTURE_COLOR, VertexFormat.Mode.TRIANGLES)
+        .withVertexShader(MeteorClient.identifier("shaders/aurora_rounded_rect.vert"))
+        .withFragmentShader(MeteorClient.identifier("shaders/aurora_glow.frag"))
+        .withUniform("AuroraGlowData", UniformType.UNIFORM_BUFFER)
+        .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+        .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+        .withCull(true)
+        .build()
+    );
+
+    public static final RenderPipeline AURORA_GRADIENT = add(new ExtendedRenderPipelineBuilder(MESH_UNIFORMS)
+        .withLocation(MeteorClient.identifier("pipeline/aurora_gradient"))
+        .withVertexFormat(MeteorVertexFormats.POS2_TEXTURE_COLOR, VertexFormat.Mode.TRIANGLES)
+        .withVertexShader(MeteorClient.identifier("shaders/aurora_rounded_rect.vert"))
+        .withFragmentShader(MeteorClient.identifier("shaders/aurora_gradient.frag"))
+        .withUniform("AuroraGradientData", UniformType.UNIFORM_BUFFER)
+        .withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false))
+        .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+        .withCull(true)
+        .build()
+    );
+
     // Post Process
 
     public static final RenderPipeline POST_OUTLINE = add(new ExtendedRenderPipelineBuilder()

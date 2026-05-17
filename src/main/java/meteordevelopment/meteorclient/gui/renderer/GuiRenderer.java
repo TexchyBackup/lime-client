@@ -12,6 +12,7 @@ import meteordevelopment.meteorclient.gui.GuiTheme;
 import meteordevelopment.meteorclient.gui.renderer.operations.TextOperation;
 import meteordevelopment.meteorclient.gui.renderer.packer.GuiTexture;
 import meteordevelopment.meteorclient.gui.renderer.packer.TexturePacker;
+import meteordevelopment.meteorclient.gui.renderer.primitives.RoundedRect;
 import meteordevelopment.meteorclient.gui.widgets.WWidget;
 import meteordevelopment.meteorclient.renderer.Renderer2D;
 import meteordevelopment.meteorclient.renderer.Texture;
@@ -84,6 +85,8 @@ public class GuiRenderer {
     public void begin(GuiGraphicsExtractor graphics) {
         this.graphics = graphics;
         this.graphics.nextStratum();
+
+        RoundedRect.beginFrame();
 
         var matrices = graphics.pose();
         matrices.pushMatrix();
@@ -248,6 +251,16 @@ public class GuiRenderer {
 
     public void triangle(double x1, double y1, double x2, double y2, double x3, double y3, Color color) {
         r.triangle(x1, y1, x2, y2, x3, y3, color);
+    }
+
+    // Aurora SDF primitives
+
+    public void roundedRect(double x, double y, double w, double h, double radius, Color fill) {
+        absolutePost(() -> RoundedRect.draw(x, y, w, h, radius, fill));
+    }
+
+    public void roundedRectStroke(double x, double y, double w, double h, double radius, Color fill, Color border, double borderWidth) {
+        absolutePost(() -> RoundedRect.draw(x, y, w, h, radius, fill, border, borderWidth));
     }
 
     public void text(String text, double x, double y, Color color, boolean title) {
