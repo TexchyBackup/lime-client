@@ -513,8 +513,12 @@ public class ModulesScreen extends TabScreen {
             // Outer glow
             renderer.glow(x, y, width, height, RADIUS, 24, p.panelGlow());
 
-            // Glass body
-            renderer.roundedRectStroke(x, y, width, height, RADIUS, p.panelBase(), p.panelBorder(), 1);
+            // Backdrop-blurred glass — samples the gaussian-blurred game scene under a rounded mask
+            meteordevelopment.meteorclient.gui.renderer.primitives.BackdropBlur.sampleInto(x, y, width, height, RADIUS, 0.55);
+
+            // Translucent glass tint over the blur (don't use panelBase here — it's too opaque to let blur show)
+            Color glassTint = new Color(15, 22, 17, 110);
+            renderer.roundedRectStroke(x, y, width, height, RADIUS, glassTint, p.panelBorder(), 1);
 
             // Header bar
             double headerH = theme.scale(HEADER_HEIGHT);

@@ -22,7 +22,9 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_RIGHT;
 
 public class WAuroraModule extends WPressable implements AuroraWidget {
     private static final Color INACTIVE_TEXT  = new Color(220, 235, 215, 255);
-    private static final Color HOVER_FILL     = new Color(255, 255, 255, 16);
+    /** Each module row is a visible opaque-ish card on top of the glass panel. */
+    private static final Color ROW_BASE       = new Color(22, 32, 24, 215);
+    private static final Color ROW_HOVER      = new Color(35, 50, 38, 235);
 
     private final Module module;
     private final String title;
@@ -90,18 +92,15 @@ public class WAuroraModule extends WPressable implements AuroraWidget {
 
         double radius = theme.scale(8);
 
-        // --- Background ---
-        // Idle: very faint hover token
-        if (AuroraPalette.HOVER.a > 0) {
-            renderer.roundedRect(x, y, width, height, radius, AuroraPalette.HOVER);
-        }
-
-        // Hover overlay
+        // --- Background card (always visible — interpolates base→hover) ---
         double hv = hoverAnim.get();
-        if (hv > 0.001) {
-            Color hc = new Color(255, 255, 255, (int)(16 * hv));
-            renderer.roundedRect(x, y, width, height, radius, hc);
-        }
+        Color rowBg = new Color(
+            (int) (ROW_BASE.r + (ROW_HOVER.r - ROW_BASE.r) * hv),
+            (int) (ROW_BASE.g + (ROW_HOVER.g - ROW_BASE.g) * hv),
+            (int) (ROW_BASE.b + (ROW_HOVER.b - ROW_BASE.b) * hv),
+            (int) (ROW_BASE.a + (ROW_HOVER.a - ROW_BASE.a) * hv)
+        );
+        renderer.roundedRect(x, y, width, height, radius, rowBg);
 
         // Active: left-to-right gradient (accent 0.15 alpha → transparent) + glow
         if (activeAnim > 0.001) {
