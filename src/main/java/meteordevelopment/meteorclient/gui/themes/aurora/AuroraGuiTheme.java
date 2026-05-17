@@ -13,11 +13,13 @@ import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraSection;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraTopBar;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraView;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraWindow;
+import meteordevelopment.meteorclient.gui.themes.aurora.widgets.input.WAuroraColorEdit;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.input.WAuroraDropdown;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.input.WAuroraSlider;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.input.WAuroraTextBox;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.pressable.*;
 import meteordevelopment.meteorclient.gui.themes.meteor.MeteorGuiTheme;
+import meteordevelopment.meteorclient.gui.widgets.WQuad;
 import meteordevelopment.meteorclient.gui.widgets.WTopBar;
 import meteordevelopment.meteorclient.gui.widgets.WWidget;
 import meteordevelopment.meteorclient.gui.widgets.containers.WSection;
@@ -30,6 +32,7 @@ import meteordevelopment.meteorclient.gui.utils.CharFilter;
 import meteordevelopment.meteorclient.gui.widgets.pressable.*;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Module;
+import meteordevelopment.meteorclient.utils.render.color.Color;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 
 public class AuroraGuiTheme extends MeteorGuiTheme {
@@ -163,5 +166,10 @@ public class AuroraGuiTheme extends MeteorGuiTheme {
     @Override
     public WTextBox textBox(String text, String placeholder, CharFilter filter, Class<? extends WTextBox.Renderer> renderer) {
         return w(new WAuroraTextBox(text, placeholder, filter, renderer));
+    }
+
+    @Override
+    public WQuad quad(Color color) {
+        return w(new WAuroraColorEdit(color));
     }
 }
