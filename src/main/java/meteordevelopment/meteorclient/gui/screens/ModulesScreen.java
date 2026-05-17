@@ -17,6 +17,7 @@ import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraDetailPan
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraSidebar;
 import meteordevelopment.meteorclient.gui.themes.aurora.widgets.WAuroraStatusBar;
 import meteordevelopment.meteorclient.gui.utils.Cell;
+import meteordevelopment.meteorclient.gui.widgets.WWidget;
 import meteordevelopment.meteorclient.gui.widgets.containers.WContainer;
 import meteordevelopment.meteorclient.gui.widgets.containers.WHorizontalList;
 import meteordevelopment.meteorclient.gui.widgets.containers.WSection;
@@ -583,6 +584,21 @@ public class ModulesScreen extends TabScreen {
                 cell.width = cell.widget().width;
                 cell.height = cell.widget().height;
             }
+        }
+
+        @Override
+        protected void renderWidget(WWidget widget, GuiRenderer renderer, double mouseX, double mouseY, double delta) {
+            // Dim the grid area while the detail pane is visible. We paint the dim overlay
+            // just before the pane itself draws so it covers everything in front of it.
+            if (widget == detailPane && detailPane != null && contentScroll != null) {
+                double s = detailPane.slideValue();
+                if (s > 0.001) {
+                    // Multiplicative 0.85 → overlay ~15% black
+                    Color dim = new Color(0, 0, 0, (int) (38 * s));
+                    renderer.quad(contentScroll.x, contentScroll.y, contentScroll.width, contentScroll.height, dim);
+                }
+            }
+            super.renderWidget(widget, renderer, mouseX, mouseY, delta);
         }
 
         @Override
