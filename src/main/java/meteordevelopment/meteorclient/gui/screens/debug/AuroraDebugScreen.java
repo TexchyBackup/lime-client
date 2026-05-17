@@ -5,6 +5,7 @@
 
 package meteordevelopment.meteorclient.gui.screens.debug;
 
+import meteordevelopment.meteorclient.gui.GuiThemes;
 import meteordevelopment.meteorclient.gui.renderer.GuiRenderer;
 import meteordevelopment.meteorclient.gui.renderer.primitives.BackdropBlur;
 import meteordevelopment.meteorclient.gui.renderer.primitives.Glow;
@@ -38,6 +39,9 @@ public class AuroraDebugScreen extends Screen {
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         super.extractRenderState(graphics, mouseX, mouseY, delta);
 
+        // Borrow the active theme so renderer.endRender's textRenderer call doesn't NPE.
+        // We don't use renderer.text() — text is drawn via vanilla graphics.text below.
+        renderer.theme = GuiThemes.get();
         renderer.begin(graphics);
         try {
             int pad = 16;
